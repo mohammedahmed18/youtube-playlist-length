@@ -1,0 +1,21 @@
+.form-group-con {
+  position: relative;
+  padding: 1rem;
+}
+.form-group-con label {
+  position: absolute;
+  bottom: 10px;
+  transition: transform ease-in-out 0.2s;
+}
+.form-group-con label.active {
+  transform: translateY(-150%);
+  color: dodgerblue;
+}
+.form-group-con input {
+  border-width: 0 0 1px 0;
+  border-color: rgba(228, 228, 228, 0.933);
+  border-radius: 0;
+}
+.form-group-con input:focus {
+  border-color: dodgerblue;
+}

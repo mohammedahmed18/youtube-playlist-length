@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <title>Youtube playlist info</title>
+  </head>
+  <body>
+    <form action="" method="POST" class="p-4">
+      <% if (locals.error) { %>
+      <div class="alert alert-danger"><%= error %></div>
+      <% } %>
+
+      <div class="d-flex">
+        <div class="form-group-con" style="width: 80%">
+          <input
+            type="text"
+            id="playlistLink"
+            name="playlist_link"
+            class="form-control shadow-none"
+          />
+          <label for="playlistLink">Playlist link</label>
+        </div>
+        <button type="submit" class="btn btn-primary my-2">Search</button>
+      </div>
+    </form>
+    <% if (locals.totalLength) { %>
+    <h1 class="text-center my-2">total length : <%= totalLength %></h1>
+    <% } %>
+
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.js"
+      integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+      crossorigin="anonymous"
+    ></script>
+    <script src="/js/script.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+  </body>
+</html>

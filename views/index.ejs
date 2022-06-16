@@ -28,6 +28,13 @@
       </div>
     </form>
     <% if (locals.totalLength) { %>
+    <div class="d-flex justify-content-center mb-3">
+      <img
+        class="col-md-6 center-block shadow bg-white p-4 rounded"
+        src="<%= thumbnail %> "
+        alt="thumbnail"
+      />
+    </div>
     <h1 class="text-center my-2">total length : <%= totalLength %></h1>
     <% } %>
 

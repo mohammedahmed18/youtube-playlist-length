@@ -2,7 +2,6 @@ const express = require("express");
 const ejs = require("ejs");
 const axios = require("axios");
 require("dotenv").config();
-
 const app = express();
 app.set("view-engine", "ejs");
 app.use(express.json());
@@ -23,7 +22,7 @@ const stringIsAValidUrl = (s) => {
 };
 const getUrlPlaylist = ({ playlist_id, nextPageToken }) => {
   const pageToken = nextPageToken ? `&pageToken=${nextPageToken}` : "";
-  return `https://www.googleapis.com/youtube/v3/playlistItems?key=${process.env.API_KEY}&part=contentDetails&playlistId=${playlist_id}&maxResults=50${pageToken}`;
+  return `https://www.googleapis.com/youtube/v3/playlistItems?key=${process.env.API_KEY}&part=contentDetails,snippet&playlistId=${playlist_id}&maxResults=50${pageToken}`;
 };
 
 const getUrlVideo = ({ video_id }) => {
@@ -46,14 +45,20 @@ const getAllListItems = async (playlist_id, nextPageToken, current_list) => {
 };
 
 const getVideosInfo = async (items) => {
-  const videos = [];
-  let video_ids = "";
-  items.forEach((video) => {
-    video_ids += `${video.contentDetails.videoId},`;
-  });
-  const url = getUrlVideo({ video_id: video_ids });
-  const response = await axios.get(url);
-  return response.data.items;
+  const perRequest = 49;
+  const numberOfLoops = Math.ceil(items.length / 49);
+  let videos_data = [];
+  for (let i = 0; i < numberOfLoops; i++) {
+    const videos = items.slice(i * 49, i * 49 + 49);
+    let video_ids = "";
+    videos.forEach((video) => {
+      video_ids += `${video.contentDetails.videoId},`;
+    });
+    const url = getUrlVideo({ video_id: video_ids });
+    const response = await axios.get(url);
+    videos_data = [...videos_data, ...response.data.items];
+  }
+  return videos_data;
 };
 
 const getTotalLength = (videos) => {
@@ -132,6 +137,7 @@ app.post("/", async (req, res) => {
   //   search the list
   try {
     const response = await axios.get(getUrlPlaylist({ playlist_id: list_id }));
+
     let items = response.data.items;
     if (response.data.nextPageToken) {
       // there is more items in the list
@@ -141,17 +147,24 @@ app.post("/", async (req, res) => {
         items
       );
     }
-    if (items.length > 50) {
+    if (items.length > 500) {
       return res.render("index.ejs", {
-        error: "the playlist is too large.... coming soon",
+        error: "the playlist is too large.... limit : 500 video",
       });
     }
+
+    const thumbnail = items[0].snippet.thumbnails.maxres.url;
     const videos = await getVideosInfo(items);
     // calculate total length
     const totalLength = await getTotalLength(videos);
-    return res.render("index.ejs", { totalLength });
+    return res.render("index.ejs", { totalLength, thumbnail });
   } catch (err) {
-    console.log(err);
+    if (err.response.status == 404) {
+      return res.render("index.ejs", {
+        error:
+          "the playlist cannot be found , make sure the playlist is public and try again",
+      });
+    }
   }
 });
 const port = process.env.PORT || 5000;

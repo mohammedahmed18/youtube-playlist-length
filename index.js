@@ -1,12 +1,11 @@
 const express = require("express");
-const ejs = require("ejs");
 const axios = require("axios");
-require("dotenv").config();
 const app = express();
 app.set("view-engine", "ejs");
 app.use(express.json());
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
+require("dotenv").config();
 
 app.get("/", (req, res) => {
   res.render("index.ejs");
@@ -46,10 +45,10 @@ const getAllListItems = async (playlist_id, nextPageToken, current_list) => {
 
 const getVideosInfo = async (items) => {
   const perRequest = 49;
-  const numberOfLoops = Math.ceil(items.length / 49);
+  const numberOfLoops = Math.ceil(items.length / perRequest);
   let videos_data = [];
   for (let i = 0; i < numberOfLoops; i++) {
-    const videos = items.slice(i * 49, i * 49 + 49);
+    const videos = items.slice(i * perRequest, i * perRequest + perRequest);
     let video_ids = "";
     videos.forEach((video) => {
       video_ids += `${video.contentDetails.videoId},`;
@@ -62,33 +61,26 @@ const getVideosInfo = async (items) => {
 };
 
 const getTotalLength = (videos) => {
-  let h = 0;
-  let m = 0;
-  let s = 0;
-
+  let th = 0, tm = 0,ts = 0;
   videos.forEach((v) => {
-    const videoLength = parseLength(v.contentDetails.duration);
-    h += videoLength.h;
-    m += videoLength.m;
-    if (m > 60) {
-      h += 1;
-      m -= 60;
+    const {H , M , S} = parseLength(v.contentDetails.duration);
+    th += H;
+    tm += M;
+    if (tm > 60) {
+      th += 1;
+      tm -= 60;
     }
-    s += videoLength.s;
-    if (s > 60) {
-      m += 1;
-      s -= 60;
+    ts += S;
+    if (ts > 60) {
+      tm += 1;
+      ts -= 60;
     }
   });
-  const total = `${h} hours ,${m} minutes,${s} seconds`;
-  return total;
+  return `${th} hours ,${tm} minutes,${ts} seconds`;
 };
 const parseLength = (duration) => {
   // PT3H5M21S
-  let h = 0;
-  let m = 0;
-  let s = 0;
-
+  const video_len = {H : 0, M : 0, S : 0};
   let subStr = "";
   for (let i = 0; i < duration.length; i++) {
     const c = duration[i];
@@ -98,43 +90,22 @@ const parseLength = (duration) => {
     } else {
       // it isn't
       if (subStr != "") {
-        switch (c) {
-          case "H":
-            h = Number(subStr);
-            break;
-
-          case "M":
-            m = Number(subStr);
-            break;
-
-          case "S":
-            s = Number(subStr);
-            break;
-        }
+        video_len[c] = Number(subStr)
         subStr = "";
       }
     }
   }
-
-  return {
-    h,
-    m,
-    s,
-  };
+  return video_len;
 };
 
 app.post("/", async (req, res) => {
   const { playlist_link } = req.body;
   const parsed_link = stringIsAValidUrl(playlist_link);
-  if (!parsed_link)
-    return res.render("index.ejs", { error: "the playlist link is invalid" });
+  const list_id = parsed_link?.searchParams?.get("list");
 
-  const list_id = parsed_link.searchParams.get("list");
   if (!list_id)
     return res.render("index.ejs", { error: "the playlist link is invalid" });
-
   // valid list id
-  //   search the list
   try {
     const response = await axios.get(getUrlPlaylist({ playlist_id: list_id }));
 
@@ -152,7 +123,6 @@ app.post("/", async (req, res) => {
         error: "the playlist is too large.... limit : 500 video",
       });
     }
-
     const thumbnail = items[0].snippet.thumbnails.maxres.url;
     const videos = await getVideosInfo(items);
     // calculate total length

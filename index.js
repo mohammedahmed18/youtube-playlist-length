@@ -1,8 +1,10 @@
 const express = require("express");
 const axios = require("axios");
-require("ejs");
 const app = express();
-app.set("view-engine", "ejs");
+
+app.engine("html", require("ejs").renderFile);
+app.set("view engine", "html");
+
 app.use(express.json());
 app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));

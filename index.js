@@ -11,6 +11,10 @@ app.get("/", (req, res) => {
   res.render("index.ejs");
 });
 
+app.get("/hello", (req, res) => {
+  res.send("hi , this works");
+});
+
 const stringIsAValidUrl = (s) => {
   try {
     const parsed_link = new URL(s);
@@ -61,9 +65,11 @@ const getVideosInfo = async (items) => {
 };
 
 const getTotalLength = (videos) => {
-  let th = 0, tm = 0,ts = 0;
+  let th = 0,
+    tm = 0,
+    ts = 0;
   videos.forEach((v) => {
-    const {H , M , S} = parseLength(v.contentDetails.duration);
+    const { H, M, S } = parseLength(v.contentDetails.duration);
     th += H;
     tm += M;
     if (tm > 60) {
@@ -80,7 +86,7 @@ const getTotalLength = (videos) => {
 };
 const parseLength = (duration) => {
   // PT3H5M21S
-  const video_len = {H : 0, M : 0, S : 0};
+  const video_len = { H: 0, M: 0, S: 0 };
   let subStr = "";
   for (let i = 0; i < duration.length; i++) {
     const c = duration[i];
@@ -90,7 +96,7 @@ const parseLength = (duration) => {
     } else {
       // it isn't
       if (subStr != "") {
-        video_len[c] = Number(subStr)
+        video_len[c] = Number(subStr);
         subStr = "";
       }
     }

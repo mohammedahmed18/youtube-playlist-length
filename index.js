@@ -2,7 +2,7 @@ const express = require("express");
 const axios = require("axios");
 const app = express();
 
-app.engine("html", require("ejs").renderFile);
+app.engine("html", require("ejs").renderFile(__dirname + "/views"));
 app.set("view engine", "html");
 
 app.use(express.json());

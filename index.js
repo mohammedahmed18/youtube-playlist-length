@@ -1,5 +1,6 @@
 const express = require("express");
 const axios = require("axios");
+require("ejs");
 const app = express();
 app.set("view-engine", "ejs");
 app.use(express.json());

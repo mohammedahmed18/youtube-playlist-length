@@ -9,7 +9,7 @@ app.use(express.urlencoded({ extended: true }));
 require("dotenv").config();
 
 app.get("/", (req, res) => {
-  res.render("index.ejs");
+  res.render("index");
 });
 
 app.get("/hello", (req, res) => {
